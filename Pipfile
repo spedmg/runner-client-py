@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+boto3 = "*"
+requests = "*"
+attrs = "*"
+
+[dev-packages]
+mamba = "*"
+expects = "*"
+requests-mock = "*"
+freezegun = "*"
+rich = "*"
+
+[requires]
+python_version = "3.9"
