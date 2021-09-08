@@ -15,8 +15,8 @@ def get(uri, params=None, version='v1'):
 
 def post(uri, data, version='v1'):
     url = __url(uri, version)
-    if not params:
-        params = {}
+    if not data:
+        data = {}
     return requests.post(
             url,
             json=data,
