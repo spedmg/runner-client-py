@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name='runner_client',
-    version='1.0.1',
+    version='1.0.2',
     author='Sony Pictures - Digital Media Group',
     author_email='runner_help@spe.sony.com',
     description='API client for Sony Pictures Runner / Compass API',
