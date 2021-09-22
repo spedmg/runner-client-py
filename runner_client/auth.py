@@ -18,7 +18,7 @@ def token_expired():
     expiry = __AUTHDATA['__token_expiry']
     if expiry:
         now = int(datetime.now().timestamp())
-        return now <= expiry
+        return (now + 5) > expiry
     return True
 
 def __fetch_new_token():

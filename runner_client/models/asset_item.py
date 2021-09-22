@@ -1,83 +1,66 @@
+from attr import attrs, attrib
 from . import Title
 
+def map_titles(titles):
+    if not titles:
+        return []
+    return list(map(lambda t: Title(**t), titles))
+
+@attrs(kw_only=True)
 class AssetItem:
-    # attrs:
-    # actions
-    # archive_status
-    # archived
-    # asset_class
-    # asset_owner
-    # asset_subtype
-    # asset_type
-    # asset_type_or_class
-    # checksum
-    # created_at
-    # custom_metadata
-    # downloadable
-    # file_name
-    # folder_ids
-    # has_custom_thumbnail
-    # has_proxy
-    # has_playable_proxy
-    # height
-    # icon_status
-    # id
-    # is_audio
-    # is_video
-    # linked_asset_group_ids
-    # managed_by
-    # mcs_id
-    # name
-    # pixel_dimensions
-    # ppi
-    # proxies
-    # proxy_file_size
-    # qc_reports
-    # rejected
-    # restorable
-    # restore_minutes_remaining
-    # restore_status
-    # restored
-    # restoring
-    # root_title
-    # scene
-    # scheduled_actions
-    # season
-    # series
-    # shareable
-    # size
-    # status
-    # thumbnail_url
-    # thumbnail_mcs_id
-    # titles
-    # uploaded_at
-    # uploaded_by
-    # uploaded_by_email
-    # usage_classification
-    # usage_restriction
-    # usage_status
-    # width
-    # updated_at
-    def __init__(self, asset_data):
-        self.__asset_data = asset_data
-        self.__titles = list(map(lambda d: Title(**d), asset_data['titles']))
-
-    @property
-    def asset_subtype(self):
-        return self.__asset_data['asset_subtype']
-
-    @property
-    def asset_type(self):
-        return self.__asset_data['asset_type']
-
-    @property
-    def id(self):
-        return self.__asset_data['id']
-
-    @property
-    def name(self):
-        return self.__asset_data['name']
-
-    @property
-    def titles(self):
-        return self.__titles
+    actions                   = attrib(default=None)
+    archive_status            = attrib(default=None)
+    archived                  = attrib(default=None)
+    asset_class               = attrib(default=None)
+    asset_owner               = attrib(default=None)
+    asset_subtype             = attrib(default=None)
+    asset_type                = attrib(default=None)
+    asset_type_or_class       = attrib(default=None)
+    checksum                  = attrib(default=None)
+    created_at                = attrib(default=None)
+    custom_metadata           = attrib(default=None)
+    downloadable              = attrib(default=None)
+    file_name                 = attrib(default=None)
+    folder_ids                = attrib(default=None)
+    has_custom_thumbnail      = attrib(default=None)
+    has_proxy                 = attrib(default=None)
+    has_playable_proxy        = attrib(default=None)
+    height                    = attrib(default=None)
+    icon_status               = attrib(default=None)
+    id                        = attrib(default=None)
+    is_audio                  = attrib(default=None)
+    is_video                  = attrib(default=None)
+    linked_asset_group_ids    = attrib(default=None)
+    managed_by                = attrib(default=None)
+    mcs_id                    = attrib(default=None)
+    name                      = attrib(default=None)
+    pixel_dimensions          = attrib(default=None)
+    ppi                       = attrib(default=None)
+    proxies                   = attrib(default=None)
+    proxy_file_size           = attrib(default=None)
+    qc_reports                = attrib(default=None)
+    rejected                  = attrib(default=None)
+    restorable                = attrib(default=None)
+    restore_minutes_remaining = attrib(default=None)
+    restore_status            = attrib(default=None)
+    restored                  = attrib(default=None)
+    restoring                 = attrib(default=None)
+    root_title                = attrib(default=None)
+    scene                     = attrib(default=None)
+    scheduled_actions         = attrib(default=None)
+    season                    = attrib(converter=map_titles)
+    series                    = attrib(converter=map_titles)
+    shareable                 = attrib(default=None)
+    size                      = attrib(default=None)
+    status                    = attrib(default=None)
+    thumbnail_url             = attrib(default=None)
+    thumbnail_mcs_id          = attrib(default=None)
+    titles                    = attrib(converter=map_titles)
+    uploaded_at               = attrib(default=None)
+    uploaded_by               = attrib(default=None)
+    uploaded_by_email         = attrib(default=None)
+    usage_classification      = attrib(default=None)
+    usage_restriction         = attrib(default=None)
+    usage_status              = attrib(default=None)
+    width                     = attrib(default=None)
+    updated_at                = attrib(default=None)
