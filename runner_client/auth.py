@@ -58,9 +58,12 @@ def __auth_request(body):
 
     if response.ok:
         response_data = response.json()
-        __AUTHDATA['__current_token'] = response_data['access_token']
-        __AUTHDATA['__current_refresh_token'] = response_data['refresh_token']
-        __AUTHDATA['__token_expiry'] = response_data['created_at'] + response_data['expires_in']
-        return response_data
+        set_auth_tokens(response_data)
 
     raise Exception(f'Runner authentication failed: {response.text}')
+
+def set_auth_tokens(response_data):
+    __AUTHDATA['__current_token'] = response_data['access_token']
+    __AUTHDATA['__current_refresh_token'] = response_data['refresh_token']
+    __AUTHDATA['__token_expiry'] = response_data['created_at'] + response_data['expires_in']
+    return response_data
