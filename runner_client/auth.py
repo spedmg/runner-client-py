@@ -20,7 +20,7 @@ def token_expired():
         return (now + 5) > expiry
     return True
 
-def authorization_grant(code, redirect_uri):
+def authorization_grant(code, redirect_uri, client_id=None, client_secret=None):
     '''
     For authorization-grant oauth flows
     {"client_id": "XXXX",
@@ -30,8 +30,8 @@ def authorization_grant(code, redirect_uri):
      "grant_type": "authorization_code"}
     '''
     return __auth_request({
-        'client_id':     config.client_id,
-        'client_secret': config.client_secret,
+        'client_id':     client_id or config.client_id,
+        'client_secret': client_secret or config.client_secret,
         'redirect_uri':  redirect_uri,
         'code':          code,
         'grant_type':    'authorization_code'
