@@ -1,4 +1,6 @@
 import json
+import base64
+from urllib.parse import urlencode
 from unittest.mock import patch
 from mamba import description, context, it, before, after
 from expects import *
@@ -27,8 +29,6 @@ with description('runner_client.auth') as self:
         self.mocks.append(patch.object(config, 'base_url', test_url))
         self.mocks.append(patch.object(config, 'username', test_username))
         self.mocks.append(patch.object(config, 'password', test_password))
-        self.mocks.append(patch.object(config, 'client_id', client_id))
-        self.mocks.append(patch.object(config, 'client_secret', client_secret))
         for m in self.mocks:
             m.start()
 
@@ -42,7 +42,9 @@ with description('runner_client.auth') as self:
             with requests_mock.Mocker() as m:
                 m.post(f'{test_url}/oauth/token', json=self.response_body)
                 expect(subject.access_token()).to(equal('runnerAccessToken'))
-                expect(m.last_request.json()).to(equal({ 'grant_type': 'password', 'username': test_username, 'password': test_password }))
+                expect(m.last_request.text).to(equal(urlencode({ 'grant_type': 'password', 'username': test_username, 'password': test_password })))
+                basic = str(base64.urlsafe_b64encode(bytes(f'{test_username}:{test_password}', 'utf-8')), 'utf-8')
+                expect(m.last_request.headers['Authorization']).to(equal('Basic ' + basic))
 
         with it('does not make multiple requests'):
             with requests_mock.Mocker() as m:
@@ -65,9 +67,17 @@ with description('runner_client.auth') as self:
                 with requests_mock.Mocker() as m:
                     m.post(f'{test_url}/oauth/token', json=self.response_body)
                     expect(subject.access_token()).to(equal('runnerAccessToken'))
-                    expect(m.last_request.json()).to(equal({ 'grant_type': 'refresh_token', 'refresh_token': 'runnerRefreshToken' }))
+                    expect(m.last_request.text).to(equal(urlencode({ 'grant_type': 'refresh_token', 'refresh_token': 'runnerRefreshToken' })))
+                    basic = str(base64.urlsafe_b64encode(bytes(f'{test_username}:{test_password}', 'utf-8')), 'utf-8')
+                    expect(m.last_request.headers['Authorization']).to(equal('Basic ' + basic))
 
     with description('.authorization_grant()'):
+        with before.each:
+            self.mocks.append(patch.object(config, 'client_id', client_id))
+            self.mocks.append(patch.object(config, 'client_secret', client_secret))
+            for m in self.mocks[-2:]:
+                m.start()
+
         with it('fetches auth for OAuth2 Authorization grant'):
             with requests_mock.Mocker() as m:
                 m.post(f'{test_url}/oauth/token', json=self.response_body)
@@ -75,13 +85,13 @@ with description('runner_client.auth') as self:
                 redirect_uri = 'mock://enterprise.warp'
                 subject.authorization_grant(code, redirect_uri)
                 expect(subject.current_auth_data.access_token).to(equal('runnerAccessToken'))
-                expect(m.last_request.json()).to(equal({
-                    'client_id': client_id,
-                    'client_secret': client_secret,
+                expect(m.last_request.text).to(equal(urlencode({
                     'redirect_uri': redirect_uri,
                     'code': code,
                     'grant_type': 'authorization_code'
-                    }))
+                    })))
+                basic = str(base64.urlsafe_b64encode(bytes(f'{client_id}:{client_secret}', 'utf-8')), 'utf-8')
+                expect(m.last_request.headers['Authorization']).to(equal('Basic ' + basic))
 
     with description('.AuthData'):
         with before.each:

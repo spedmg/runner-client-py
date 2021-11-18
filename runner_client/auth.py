@@ -44,15 +44,13 @@ class AuthData(dict):
                 'password': config.password,
                 })
 
-    def authorization_grant(self, code, redirect_uri, client_id=None, client_secret=None):
+    def authorization_grant(self, code, redirect_uri):
         '''
         For authorization-grant oauth flows
         {"client_id": "XXXX", "client_secret": "XXX", "redirect_uri": "https://your.redirect.uri",
          "code": "code_from_step_1", "grant_type": "authorization_code"}
         '''
         return self.__auth_request({
-            'client_id':     client_id or config.client_id,
-            'client_secret': client_secret or config.client_secret,
             'redirect_uri':  redirect_uri,
             'code':          code,
             'grant_type':    'authorization_code'
@@ -60,7 +58,13 @@ class AuthData(dict):
 
     def __auth_request(self, body):
         url = f'{config.base_url}/oauth/token'
-        response = requests.post(url, json=body)
+        auth = None
+        if config.client_id and config.client_secret:
+            auth = (config.client_id, config.client_secret)
+        elif config.username and config.password:
+            auth = (config.username, config.password)
+
+        response = requests.post(url, data=body, auth=auth)
 
         if response.ok:
             response_data = response.json()
