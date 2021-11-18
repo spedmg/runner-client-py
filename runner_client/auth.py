@@ -1,69 +1,91 @@
+# pylint: disable=no-member
 from datetime import datetime
 import requests
 from . import config
 
-__AUTHDATA = {
-        '__current_token': None,
-        '__current_refresh_token': None,
-        '__token_expiry': 0,
-        }
+class AuthData(dict):
+    __FIELDS = ('access_token', 'refresh_token', 'created_at', 'expires_in')
+
+    def __init__(self, auth_data=None):
+        auth_data = auth_data or {}
+        for field in AuthData.__FIELDS:
+            setattr(self, field, auth_data.get(field))
+        dict.__init__(self, **auth_data)
+
+    @property
+    def token_expiry(self):
+        return (self.created_at or 0) + (self.expires_in or 0)
+
+    def token_expired(self):
+        expiry = self.token_expiry
+        if expiry:
+            now = int(datetime.now().timestamp())
+            return (now + 5) > expiry
+        return True
+
+    def update(self, auth_data):
+        for field in AuthData.__FIELDS:
+            setattr(self, field, auth_data.get(field))
+        super().update(auth_data)
+        return self
+
+    def fetch_new_token(self):
+        if self.refresh_token:
+            # refresh API token
+            self.__auth_request({
+                'grant_type': 'refresh_token',
+                'refresh_token': self.refresh_token,
+                })
+        else:
+            # New API Session
+            self.__auth_request({
+                'grant_type': 'password',
+                'username': config.username,
+                'password': config.password,
+                })
+
+    def authorization_grant(self, code, redirect_uri, client_id=None, client_secret=None):
+        '''
+        For authorization-grant oauth flows
+        {"client_id": "XXXX", "client_secret": "XXX", "redirect_uri": "https://your.redirect.uri",
+         "code": "code_from_step_1", "grant_type": "authorization_code"}
+        '''
+        return self.__auth_request({
+            'client_id':     client_id or config.client_id,
+            'client_secret': client_secret or config.client_secret,
+            'redirect_uri':  redirect_uri,
+            'code':          code,
+            'grant_type':    'authorization_code'
+            })
+
+    def __auth_request(self, body):
+        url = f'{config.base_url}/oauth/token'
+        response = requests.post(url, json=body)
+
+        if response.ok:
+            response_data = response.json()
+            return self.update(response_data)
+
+        raise Exception(f'Runner authentication failed: {response.text}')
+
+    def reset(self):
+        for field in AuthData.__FIELDS:
+            setattr(self, field, None)
+
+current_auth_data = AuthData()
 
 def access_token():
-    if token_expired():
-        __fetch_new_token()
-    return __AUTHDATA['__current_token']
+    if current_auth_data.token_expired():
+        current_auth_data.fetch_new_token()
+    return current_auth_data.access_token
 
-def token_expired():
-    expiry = __AUTHDATA['__token_expiry']
-    if expiry:
-        now = int(datetime.now().timestamp())
-        return (now + 5) > expiry
-    return True
-
-def authorization_grant(code, redirect_uri, client_id=None, client_secret=None):
-    '''
-    For authorization-grant oauth flows
-    {"client_id": "XXXX",
-     "client_secret": "XXX",
-     "redirect_uri": "https://your.redirect.uri",
-     "code": "code_from_step_1",
-     "grant_type": "authorization_code"}
-    '''
-    return __auth_request({
-        'client_id':     client_id or config.client_id,
-        'client_secret': client_secret or config.client_secret,
-        'redirect_uri':  redirect_uri,
-        'code':          code,
-        'grant_type':    'authorization_code'
-        })
-
-def __fetch_new_token():
-    if __AUTHDATA['__current_refresh_token']:
-        # refresh API token
-        __auth_request({
-            'grant_type': 'refresh_token',
-            'refresh_token': __AUTHDATA['__current_refresh_token'],
-            })
-    else:
-        # New API Session
-        __auth_request({
-            'grant_type': 'password',
-            'username': config.username,
-            'password': config.password,
-            })
-
-def __auth_request(body):
-    url = f'{config.base_url}/oauth/token'
-    response = requests.post(url, json=body)
-
-    if response.ok:
-        response_data = response.json()
-        set_auth_tokens(response_data)
-
-    raise Exception(f'Runner authentication failed: {response.text}')
+def authorization_grant(*args, **kwargs):
+    return current_auth_data.authorization_grant(*args, **kwargs)
 
 def set_auth_tokens(response_data):
-    __AUTHDATA['__current_token'] = response_data['access_token']
-    __AUTHDATA['__current_refresh_token'] = response_data['refresh_token']
-    __AUTHDATA['__token_expiry'] = response_data['created_at'] + response_data['expires_in']
-    return response_data
+    current_auth_data.update(response_data)
+    return current_auth_data
+
+def reset():
+    current_auth_data.reset()
+    return current_auth_data
