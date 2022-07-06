@@ -19,8 +19,10 @@ class AssetItem:
     checksum                  = attrib(default=None)
     created_at                = attrib(default=None)
     custom_metadata           = attrib(default=None)
+    custom_metadata_fields    = attrib(default=None)
     downloadable              = attrib(default=None)
     file_name                 = attrib(default=None)
+    file_size                 = attrib(default=None)
     folder_ids                = attrib(default=None)
     has_custom_thumbnail      = attrib(default=None)
     has_proxy                 = attrib(default=None)
@@ -34,6 +36,8 @@ class AssetItem:
     managed_by                = attrib(default=None)
     mcs_id                    = attrib(default=None)
     name                      = attrib(default=None)
+    naming_convention         = attrib(default=None)
+    original_file_name        = attrib(default=None)
     pixel_dimensions          = attrib(default=None)
     ppi                       = attrib(default=None)
     proxies                   = attrib(default=None)
@@ -48,8 +52,8 @@ class AssetItem:
     root_title                = attrib(default=None)
     scene                     = attrib(default=None)
     scheduled_actions         = attrib(default=None)
-    season                    = attrib(converter=map_titles)
-    series                    = attrib(converter=map_titles)
+    season                    = attrib(default=None, converter=map_titles)
+    series                    = attrib(default=None, converter=map_titles)
     shareable                 = attrib(default=None)
     size                      = attrib(default=None)
     status                    = attrib(default=None)
@@ -64,3 +68,8 @@ class AssetItem:
     usage_status              = attrib(default=None)
     width                     = attrib(default=None)
     updated_at                = attrib(default=None)
+
+    # def __init__(self, **attrs):
+    #     _wanted_attrs = [attr.name for attr in self.__attrs_attrs__]
+    #     _for_init = { k: v for k, v in attrs.items() if k in _wanted_attrs }
+    #     self.__attrs_init__(_for_init)

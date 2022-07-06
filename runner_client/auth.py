@@ -8,8 +8,10 @@ class AuthData(dict):
 
     def __init__(self, auth_data=None):
         auth_data = auth_data or {}
+
         for field in AuthData.__FIELDS:
             setattr(self, field, auth_data.get(field))
+
         dict.__init__(self, **auth_data)
 
     @property
@@ -18,14 +20,17 @@ class AuthData(dict):
 
     def token_expired(self):
         expiry = self.token_expiry
+
         if expiry:
             now = int(datetime.now().timestamp())
             return (now + 5) > expiry
+
         return True
 
     def update(self, auth_data):
         for field in AuthData.__FIELDS:
             setattr(self, field, auth_data.get(field))
+
         super().update(auth_data)
         return self
 
@@ -35,14 +40,14 @@ class AuthData(dict):
             self.__auth_request({
                 'grant_type': 'refresh_token',
                 'refresh_token': self.refresh_token,
-                })
+            })
         else:
             # New API Session
             self.__auth_request({
                 'grant_type': 'password',
                 'username': config.username,
                 'password': config.password,
-                })
+            })
 
     def authorization_grant(self, code, redirect_uri):
         '''
