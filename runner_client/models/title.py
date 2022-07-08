@@ -3,6 +3,8 @@ from attr import attrs, attrib
 @attrs(kw_only=True)
 class Title:
     alpha                 = attrib(default=None)
+    alpha_id              = attrib(default=None)
+    alpha_name            = attrib(default=None)
     eidr                  = attrib(default=None)
     full_name             = attrib(default=None)
     gmdm_id               = attrib(default=None)
@@ -10,6 +12,7 @@ class Title:
     gpms_id_and_name      = attrib(default=None)
     id                    = attrib(default=None)
     name                  = attrib(default=None)
+    runner_alpha_id       = attrib(default=None)
     season_number         = attrib(default=None)
     season_number_integer = attrib(default=None)
     season_number_prefix  = attrib(default=None)
